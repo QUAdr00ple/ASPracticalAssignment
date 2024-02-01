@@ -24,10 +24,12 @@ namespace WebApplication3.ViewModels
 
         [Required]
         [DataType(DataType.Text)]
+        [RegularExpression(@"^[a-zA-Z]+$", ErrorMessage = "Only letters are allowed.")]
         public string FirstName { get; set; }
 
         [Required]
         [DataType(DataType.Text)]
+        [RegularExpression(@"^[a-zA-Z]+$", ErrorMessage = "Only letters are allowed.")]
         public string LastName { get; set; }
 
         [Required]

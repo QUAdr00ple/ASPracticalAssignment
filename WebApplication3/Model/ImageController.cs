@@ -15,9 +15,9 @@ namespace WebApplication3.Model
         {
             return View();
         }
-        public IActionResult GetImage(string userId)
+        public IActionResult GetImage(string userEmail)
         {
-            var user = userManager.FindByIdAsync(userId).Result;
+            var user = userManager.FindByEmailAsync(userEmail).Result;
             if (user != null && user.Photo != null)
             {
                 return File(user.Photo, "image/jpeg"); // Adjust the content type based on your image type

@@ -8,13 +8,15 @@
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
     <ul>
-        <img src="@Url.Action("GetImage", "ImageController", new { userId = ViewData["UserId"] })" alt="User Photo" />
+        <img src="@Url.Action("GetImage", "ImageController", new { userEmail = contxt.HttpContext.Session.GetString("UserEmail") })" alt="User Photo" />
         <li> First Name: @contxt.HttpContext.Session.GetString("UserFirstName")</li>
         <li> Last Name: @contxt.HttpContext.Session.GetString("UserLastName")</li>
         <li> Email: @contxt.HttpContext.Session.GetString("UserEmail")</li>
         <li>Phone Number: @contxt.HttpContext.Session.GetString("UserMobileNo")</li>
+        <li>Credit Card Number: @Model.GetDecryptedCreditCardNo()</li>
         <li> Billing Address: @contxt.HttpContext.Session.GetString("UserBillingAddress")</li>
         <li> Shipping Address: @contxt.HttpContext.Session.GetString("UserShippingAddress")</li>
     </ul>
     <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <a href="ChangePassword">Change Password</a>
 </div>

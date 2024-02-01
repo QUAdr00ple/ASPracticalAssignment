@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebApplication3.Model;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Security.Claims;
 
 namespace WebApplication3.Pages
 {
@@ -10,14 +11,18 @@ namespace WebApplication3.Pages
     {
 		private readonly SignInManager<ApplicationUser> signInManager;
         private readonly IHttpContextAccessor contxt;
-        public LogoutModel(SignInManager<ApplicationUser> signInManager, IHttpContextAccessor httpContextAccessor)
-        {
-            this.signInManager = signInManager;
-            this.contxt = httpContextAccessor;
-        }
-        public void OnGet() { }
+		private readonly AuditLogService _auditLogService;
+
+		public LogoutModel(SignInManager<ApplicationUser> signInManager, IHttpContextAccessor httpContextAccessor, AuditLogService auditLogService)
+		{
+			this.signInManager = signInManager;
+			this.contxt = httpContextAccessor;
+			_auditLogService = auditLogService;
+		}
+		public void OnGet() { }
 		public async Task<IActionResult> OnPostLogoutAsync()
 		{
+			_auditLogService.LogLogout(contxt.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
 			await signInManager.SignOutAsync();
             contxt.HttpContext.Session.Clear();
             return RedirectToPage("Login");

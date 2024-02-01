@@ -1,0 +1,17 @@
+﻿@page
+@model SendEmailModel
+@{
+    ViewData["Title"] = "Send Email";
+}
+<form method="post">
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="form-group">
+        <label asp-for="EModel.Email"></label>
+        <input asp-for="EModel.Email" class="form-control" />
+        <span asp-validation-for="EModel.Email" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Send Email</button>
+</form>
+

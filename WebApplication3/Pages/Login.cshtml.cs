@@ -18,13 +18,22 @@ namespace WebApplication3.Pages
 		private readonly SignInManager<ApplicationUser> signInManager;
 		private readonly IHttpContextAccessor contxt;
 		private readonly ILogger<LoginModel> logger;
-
-		public LoginModel(SignInManager<ApplicationUser> signInManager, IHttpContextAccessor httpContextAccessor, ILogger<LoginModel> logger)
+		private readonly PasswordHistoryService passwordHistoryService;
+		private readonly AuditLogService _auditLogService;
+		public LoginModel(
+			SignInManager<ApplicationUser> signInManager,
+			IHttpContextAccessor httpContextAccessor,
+			ILogger<LoginModel> logger,
+			AuditLogService auditLogService,
+			PasswordHistoryService passwordHistoryService) 
 		{
 			this.signInManager = signInManager;
 			this.contxt = httpContextAccessor;
 			this.logger = logger;
+			_auditLogService = auditLogService;
+			this.passwordHistoryService = passwordHistoryService;
 		}
+
 
 		public void OnGet()
 		{
@@ -36,16 +45,40 @@ namespace WebApplication3.Pages
 			{
 				if (ModelState.IsValid)
 				{
+					var lockeduser = await signInManager.UserManager.FindByEmailAsync(LModel.Email);
+					if (lockeduser != null && await signInManager.UserManager.IsLockedOutAsync(lockeduser))
+					{
+						ModelState.AddModelError("", "Account is locked out. Please try again later.");
+						return Page();
+					}
 
 					var identityResult = await signInManager.PasswordSignInAsync(LModel.Email, LModel.Password,
 					   LModel.RememberMe, false);
 					if (identityResult.Succeeded)
 					{
 						var user = await signInManager.UserManager.FindByEmailAsync(LModel.Email);
-						if (user != null)
+
+                        // Check if the password has been the same for more than 60 minutes
+                        var recentDate = await passwordHistoryService.GetLastPasswordChangeDateAsync(user);
+
+                        if (recentDate.HasValue)
+                        {
+                            if (recentDate.Value != DateTime.MinValue)
+                            {
+                                var maxPasswordAge = TimeSpan.FromMinutes(60); // Set the minimum password age
+                                var timeSinceLastChange = DateTime.UtcNow - recentDate.Value;
+
+                                if (timeSinceLastChange > maxPasswordAge)
+                                {
+                                    ModelState.AddModelError(string.Empty, $"Password has expired. Please change your password. Time Since Last Change: {timeSinceLastChange}. Current UTC Time: {DateTime.UtcNow}. Recent Date: {recentDate}");
+                                    await signInManager.SignOutAsync();
+                                    return Page();
+                                }
+                            }
+                        }
+                        if (user != null)
 						{
-							contxt.HttpContext.Session.SetString("UserId", user.Email);
-							contxt.HttpContext.Session.SetString("UserEmail", user.Email);
+                            contxt.HttpContext.Session.SetString("UserEmail", user.Email);
 							contxt.HttpContext.Session.SetString("UserFirstName", user.FirstName);
 							contxt.HttpContext.Session.SetString("UserLastName", user.LastName);
 							contxt.HttpContext.Session.SetString("UserCreditCardNo", user.CreditCardNo);
@@ -53,14 +86,24 @@ namespace WebApplication3.Pages
 							contxt.HttpContext.Session.SetString("UserBillingAddress", user.BillingAddress);
 							contxt.HttpContext.Session.SetString("UserShippingAddress", user.ShippingAddress);
 						}
+						_auditLogService.LogLogin(user.Id);
 						return RedirectToPage("Index");
 					}
 					else
 					{
+						// Increment the failed login attempts
+						await signInManager.UserManager.AccessFailedAsync(lockeduser);
+
+						if (await signInManager.UserManager.IsLockedOutAsync(lockeduser))
+						{
+							ModelState.AddModelError("", "Account is locked out. Please try again later.");
+							return Page();
+						}
+
 						var errorDescription = identityResult.ToString();
 						logger.LogError($"Identity error: {errorDescription}");
-						ModelState.AddModelError("", errorDescription);
 						ModelState.AddModelError("", "Username or Password incorrect");
+						_auditLogService.LogLoginFailed(lockeduser.Id);
 						return Page();
 					}
 				}
@@ -69,8 +112,7 @@ namespace WebApplication3.Pages
 			catch (Exception ex)
 			{
 				logger.LogError($"An error occurred during login: {ex.Message}");
-				// Handle or rethrow the exception based on your application's requirements
-				return Page();  // Add a return statement to handle the exception case
+				return Page();  
 			}
 		}
 

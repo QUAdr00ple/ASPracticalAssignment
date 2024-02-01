@@ -16,6 +16,10 @@ build_property.GenerateRazorMetadataSourceChecksumAttributes =
 build_property.MSBuildProjectDirectory = C:\Users\Zhang An Qi\Documents\NYP Y2 S2\Application Security\AS Assignment\WebApplication3
 build_property._RazorSourceGeneratorDebug = 
 
+[C:/Users/Zhang An Qi/Documents/NYP Y2 S2/Application Security/AS Assignment/WebApplication3/Pages/ChangePassword.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ2hhbmdlUGFzc3dvcmQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/Zhang An Qi/Documents/NYP Y2 S2/Application Security/AS Assignment/WebApplication3/Pages/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRXJyb3IuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
@@ -78,6 +82,14 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/Zhang An Qi/Documents/NYP Y2 S2/Application Security/AS Assignment/WebApplication3/Pages/Register.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUmVnaXN0ZXIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Zhang An Qi/Documents/NYP Y2 S2/Application Security/AS Assignment/WebApplication3/Pages/ResetPassword.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUmVzZXRQYXNzd29yZC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Zhang An Qi/Documents/NYP Y2 S2/Application Security/AS Assignment/WebApplication3/Pages/SendEmail.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2VuZEVtYWlsLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/Zhang An Qi/Documents/NYP Y2 S2/Application Security/AS Assignment/WebApplication3/Pages/Shared/_ValidationScriptsPartial.cshtml]

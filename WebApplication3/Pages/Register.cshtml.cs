@@ -4,25 +4,35 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using WebApplication3.ViewModels;
 using WebApplication3.Model;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Http;
 
 namespace WebApplication3.Pages
 {
     public class RegisterModel : PageModel
     {
 
-        private UserManager<ApplicationUser> userManager { get; }
-        private SignInManager<ApplicationUser> signInManager { get; }
+        private readonly UserManager<ApplicationUser> userManager;
+        private readonly SignInManager<ApplicationUser> signInManager;
+        private readonly AuditLogService auditLogService;
+        private readonly IHttpContextAccessor contxt;
+        private readonly IDataProtector protector;  
 
         [BindProperty]
         public Register RModel { get; set; }
 
-        public RegisterModel(UserManager<ApplicationUser> userManager,
-        SignInManager<ApplicationUser> signInManager)
+        public RegisterModel(
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager,
+            AuditLogService auditLogService,
+            IHttpContextAccessor contxt,
+            IDataProtector protector)  
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
+            this.auditLogService = auditLogService;
+            this.contxt = contxt;
+            this.protector = protector;
         }
-
 
         public void OnGet()
         {
@@ -33,8 +43,6 @@ namespace WebApplication3.Pages
         {
             if (ModelState.IsValid)
             {
-				var dataProtectionProvider = DataProtectionProvider.Create("EncryptData");
-				var protector = dataProtectionProvider.CreateProtector("PracticalAssignment2");
 
 				var user = new ApplicationUser()
                 {
@@ -68,12 +76,19 @@ namespace WebApplication3.Pages
 				var result = await userManager.CreateAsync(user, RModel.Password);
                 if (result.Succeeded)
                 {
-                    await signInManager.SignInAsync(user, false);
+                    if (user != null)
+                    {
+                        contxt.HttpContext.Session.SetString("UserEmail", user.Email);
+                        contxt.HttpContext.Session.SetString("UserFirstName", user.FirstName);
+                        contxt.HttpContext.Session.SetString("UserLastName", user.LastName);
+                        contxt.HttpContext.Session.SetString("UserCreditCardNo", user.CreditCardNo);
+                        contxt.HttpContext.Session.SetString("UserMobileNo", user.MobileNo);
+                        contxt.HttpContext.Session.SetString("UserBillingAddress", user.BillingAddress);
+                        contxt.HttpContext.Session.SetString("UserShippingAddress", user.ShippingAddress);
+                    }
+                    auditLogService.LogRegister(user.Id);
+					await signInManager.SignInAsync(user, false);
                     return RedirectToPage("Index");
-                }
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError("", error.Description);
                 }
             }
             return Page();
